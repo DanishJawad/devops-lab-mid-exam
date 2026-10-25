@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab Notes</title>
+  <style>
+    /* Spacing 8/16/24/32/48, sizes 13/15/20/28, weights 400/600,
+       one neutral ramp plus one accent. */
+    :root {
+      --n-50: #f7f8f9; --n-200: #dfe2e6; --n-500: #6b7280;
+      --n-700: #374151; --n-900: #15191e;
+      --accent: #1d5fd1; --accent-dark: #174ba6;
+      --error-bg: #fdf1f0; --error-text: #8f2318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--n-50); color: var(--n-900);
+      font: 400 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
+    h1 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
+    .served { font-size: 13px; color: var(--n-500); margin: 0 0 32px; }
+    .served code { color: var(--n-700); font-size: 13px; }
+    form { display: flex; gap: 8px; margin-bottom: 32px; }
+    input[type=text] {
+      flex: 1; font: inherit; padding: 8px 16px;
+      border: 1px solid var(--n-200); border-radius: 4px; background: #fff;
+    }
+    input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    button {
+      font: inherit; font-weight: 600; padding: 8px 16px; border: 0;
+      border-radius: 4px; background: var(--accent); color: #fff; cursor: pointer;
+    }
+    button:hover { background: var(--accent-dark); }
+    button:disabled { background: var(--n-500); cursor: wait; }
+    h2 { font-size: 20px; font-weight: 600; margin: 0 0 16px; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { padding: 16px 0; border-top: 1px solid var(--n-200); }
+    li time { display: block; font-size: 13px; color: var(--n-500); }
+    .empty { color: var(--n-500); margin: 0; }
+    .error {
+      background: var(--error-bg); color: var(--error-text);
+      padding: 16px; border-radius: 4px; margin: 0 0 32px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1 id="app-title">Lab Notes</h1>
+  <p class="served">Served by <code id="served-by">{{ served_by }}</code></p>
+
+  {% if error %}
+    <p class="error" id="error-message" role="alert">{{ error }}</p>
+  {% endif %}
+
+  <form id="note-form" method="post" action="/notes">
+    <input id="note-body" type="text" name="body" maxlength="{{ max_length }}"
+           placeholder="Write a note" aria-label="Note" required>
+    <button id="note-submit" type="submit">Add note</button>
+  </form>
+
+  <h2>Notes</h2>
+  {% if notes %}
+    <ul id="notes-list">
+      {% for note in notes %}
+        <li>{{ note.body }}<time>{{ note.created_at.strftime("%Y-%m-%d %H:%M UTC") }}</time></li>
+      {% endfor %}
+    </ul>
+  {% elif not error %}
+    <p class="empty" id="notes-empty">No notes on this server yet. Add one above.</p>
+  {% endif %}
+</main>
+<script>
+  // Loading state: block double submits while the request is in flight.
+  document.getElementById("note-form").addEventListener("submit", function () {
+    var b = document.getElementById("note-submit");
+    b.disabled = true;
+    b.textContent = "Adding...";
+  });
+</script>
+</body>
+</html>
